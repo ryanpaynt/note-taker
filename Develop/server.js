@@ -53,18 +53,14 @@ app.get("/", function(req, res) {
     response.sendFile(path.join(public, "index.html"));
 });
 
-// Route to notes page  
 app.get("/notes", function(req, res) {
     res.sendFile(path.join(public, "notes.html"));
 });
 
-// Route to home page if user does not enter an endpoint
 app.get("*", function(req, res) {
     res.redirect('/');
 });
 
-// Starts the server to begin listening
-// =============================================================
 app.listen(PORT, function() {
     console.log("App listening on PORT " + PORT);
 });
