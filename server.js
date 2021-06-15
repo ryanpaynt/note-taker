@@ -12,16 +12,40 @@ app.use(express.static("public"));
 var notesArr = [];
 
 app.get("/api/notes", function(req, res){
-    notesArr = JSON.parse(fs.readFileSync("./db/db.json", 'utf-8'));
+    notesArr = JSON.parse(fs.readFileSync("./db/db.json", 'utf-8', null, 2));
     return res.json(notesArr);
 });
 
-app.post("/api/notes", function(res, req){
+app.post("/api/notes", function(req, res){
     notesArr = JSON.parse(fs.readFileSync("./db/db.json", 'utf-8'));
     var newNote = req.body;
-    notesArr.concat(newNote);
+
+    if(notesArr.length > 0){
+        var lastId = notesArr[notesArr.length-1].id;
+        newNote.id = lastId + 1;
+    } else {
+        newNote.id = 1;
+    }
+
+    notesArr.push(newNote);
+    notesArr = JSON.stringify(notesArr);
+    fs.writeFileSync("./db/db.json", notesArr);
     res.json(notesArr);
 });
+
+app.delete("/api/notes/:id", function(req,res){
+    notesArr = JSON.parse(fs.readFileSync("./db/db.json"));
+    console.log(notesArr);
+    var deleteId = req.params.id;
+    for(let i = 0; i < notesArr.length; i++){
+        if(deleteId = notesArr[i].id){
+            notesArr.splice(i, 1);
+        }
+    }
+    notesArr = JSON.stringify(notesArr);
+    fs.writeFileSync("./db/db.json", notesArr);
+    res.json(notesArr);
+})
 
 app.get("/", function(req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
