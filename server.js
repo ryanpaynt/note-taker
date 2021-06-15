@@ -1,7 +1,8 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-
+const notesArr = require('./db/db.json');
+const { type } = require("os");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -9,42 +10,48 @@ app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 app.use(express.static("public"));
 
-var notesArr = [];
+const updNotes = (arr) => {
+    fs.writeFileSync(path.join(__dirname, './db/db.json'), JSON.stringify(arr));
 
-app.get("/api/notes", function(req, res){
-    notesArr = JSON.parse(fs.readFileSync("./db/db.json", 'utf-8', null, 2));
-    return res.json(notesArr);
-});
+}
 
-app.post("/api/notes", function(req, res){
-    notesArr = JSON.parse(fs.readFileSync("./db/db.json", 'utf-8'));
-    var newNote = req.body;
+const deleteNotes = (id, arr) => {
+    for(var i = 0; i < arr.length; i++){
+        var note = arr[i];
+        if(note.id == id){
+            arr.splice(i, 1);
+            updNotes(arr);
+            return;
+        }
+    }
+}
 
-    if(notesArr.length > 0){
-        var lastId = notesArr[notesArr.length-1].id;
-        newNote.id = lastId + 1;
+const newNote = (body, arr) => {
+    const newNote = body;
+    if(arr.length > 0){
+        let lastNoteId = arr[arr.length - 1].id;
+        newNote.id = lastNoteId + 1;
     } else {
         newNote.id = 1;
     }
+    arr.push(newNote);
+    updNotes(arr)
+    return newNote;
+}
 
-    notesArr.push(newNote);
-    notesArr = JSON.stringify(notesArr);
-    fs.writeFileSync("./db/db.json", notesArr);
+app.get("/api/notes", function(req, res){
     res.json(notesArr);
 });
 
+app.post("/api/notes", function(req, res){
+    const newestNote = newNote(req.body, notesArr);
+    res.json(newestNote);
+});
+
 app.delete("/api/notes/:id", function(req,res){
-    notesArr = JSON.parse(fs.readFileSync("./db/db.json"));
-    console.log(notesArr);
-    var deleteId = req.params.id;
-    for(let i = 0; i < notesArr.length; i++){
-        if(deleteId = notesArr[i].id){
-            notesArr.splice(i, 1);
-        }
-    }
-    notesArr = JSON.stringify(notesArr);
-    fs.writeFileSync("./db/db.json", notesArr);
-    res.json(notesArr);
+    console.log(req.params);
+    deleteNotes(req.params.id, notesArr);
+    res.json(true);
 })
 
 app.get("/", function(req, res) {
