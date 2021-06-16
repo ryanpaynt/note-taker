@@ -14,7 +14,7 @@
 - [Links](#links)
 
 ## Description
-This program is designed to 
+Using node js and expess this application is able to take requests from a user and get responses from the server. This app is a note-taker that allows the user to make notes, save them, and delete them. These notes are saved onto a json file.
 
 ## Installation
 While on my github page please fork the document and clone the following repo.
